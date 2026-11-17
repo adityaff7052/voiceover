@@ -1,1 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <meta name="description" content="Create natural Hindi, English and Hinglish narration. Generate long scripts into one downloadable WAV file.">
+  <title>Voiceover Studio — Text to Speech</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Voiceover Studio home">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        <span class="brand-name">VOICEOVER<span class="brand-light"> STUDIO</span></span>
+      </a>
+      <div class="topbar-right">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="topbar-label">MULTILINGUAL VOICE GENERATION</span>
+      </div>
+    </header>
 
+    <main>
+      <section class="intro">
+        <div class="eyebrow"><span class="eyebrow-line"></span> TEXT TO SPEECH</div>
+        <h1>Your words.<br><span class="muted-heading">A voice that carries them.</span></h1>
+        <p class="intro-copy">Turn Hindi, English and Hinglish scripts into expressive narration. One script in, one complete WAV out.</p>
+      </section>
+
+      <div id="serverNotice" class="notice" role="status" hidden></div>
+
+      <div class="studio-layout">
+        <section class="panel script-panel" aria-labelledby="scriptHeading">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">01 / YOUR SCRIPT</div>
+              <h2 id="scriptHeading">Add your text</h2>
+            </div>
+            <label class="upload-button" for="fileInput">
+              <span aria-hidden="true">↑</span> Upload .TXT
+            </label>
+            <input id="fileInput" type="file" accept=".txt,text/plain" hidden>
+          </div>
+
+          <label class="sr-only" for="scriptInput">Text to convert into speech</label>
+          <textarea id="scriptInput" maxlength="120000" spellcheck="false" placeholder="Paste your script here…&#10;&#10;You can write in Hindi, English, or Hinglish. Long scripts are automatically divided into sections and joined into one recording."></textarea>
+
+          <div class="editor-footer">
+            <div class="editor-hint"><span class="hint-dot"></span> Long scripts are processed automatically</div>
+            <div class="counts"><span id="wordCount">0 words</span><span class="count-divider">·</span><span id="charCount">0 / 120,000 characters</span></div>
+          </div>
+
+          <div class="script-actions">
+            <button id="clearButton" class="text-button" type="button">Clear text</button>
+            <span id="fileName" class="file-name" aria-live="polite"></span>
+          </div>
+        </section>
+
+        <aside class="panel settings-panel" aria-labelledby="settingsHeading">
+          <div class="panel-heading settings-title">
+            <div>
+              <div class="section-kicker">02 / VOICE SETTINGS</div>
+              <h2 id="settingsHeading">Shape the narration</h2>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="languageSelect">Language</label>
+            <select id="languageSelect" class="select-control">
+              <option value="auto">Auto detect</option>
+              <option value="hindi">Hindi · हिन्दी</option>
+              <option value="english">English · India</option>
+              <option value="hinglish">Hinglish · हिंदी + English</option>
+            </select>
+            <p class="field-note">Auto detects Devanagari Hindi and common Romanized Hindi patterns.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="engineSelect">Voice engine</label>
+            <select id="engineSelect" class="select-control">
+              <option value="chirp3">Chirp 3 HD · Cinematic</option>
+              <option value="neural2">Neural2 · Adjustable</option>
+            </select>
+            <p id="engineNote" class="field-note">Premium naturalness and expressive delivery. Pitch and speed adjustment are not available for Chirp 3 HD.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="voiceSelect">Voice character <span class="label-subtle">· masculine</span></label>
+            <select id="voiceSelect" class="select-control" disabled>
+              <option>Loading available voices…</option>
+            </select>
+            <p class="field-note">The same character name is selected across Hindi and Indian English where Google provides it.</p>
+          </div>
+
+          <div class="control-group" id="adjustmentControls">
+            <div class="control-heading">
+              <label for="speedRange">Speaking speed</label>
+              <output id="speedValue" for="speedRange">1.00×</output>
+            </div>
+            <input id="speedRange" class="range-control" type="range" min="0.75" max="1.25" step="0.05" value="1">
+            <div class="range-ends"><span>Measured</span><span>Faster</span></div>
+
+            <div class="control-heading pitch-heading">
+              <label for="pitchRange">Pitch</label>
+              <output id="pitchValue" for="pitchRange">0</output>
+            </div>
+            <input id="pitchRange" class="range-control" type="range" min="-5" max="5" step="1" value="0">
+            <div class="range-ends"><span>Lower</span><span>Higher</span></div>
+          </div>
+
+          <div class="voice-summary">
+            <div class="voice-symbol" aria-hidden="true">◖</div>
+            <div>
+              <strong>Mature masculine narrator</strong>
+              <span>Calm · Clear · Composed</span>
+            </div>
+          </div>
+
+          <button id="generateButton" class="generate-button" type="button" disabled>
+            <span>Generate narration</span><span class="button-arrow" aria-hidden="true">↗</span>
+          </button>
+          <p class="privacy-note">Your text is sent to Google Cloud only when you generate audio.</p>
+        </aside>
+      </div>
+
+      <section id="progressPanel" class="panel output-panel" aria-labelledby="outputHeading" hidden>
+        <div class="panel-heading">
+          <div>
+            <div class="section-kicker">03 / AUDIO OUTPUT</div>
+            <h2 id="outputHeading">Your recording</h2>
+          </div>
+          <span id="outputState" class="output-state">IN PROGRESS</span>
+        </div>
+
+        <div class="progress-copy">
+          <span id="progressMessage">Preparing your script…</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <progress id="progressBar" max="100" value="0">0%</progress>
+        <p id="progressDetail" class="field-note" aria-live="polite">Your script is being processed in sections.</p>
+
+        <div id="audioResult" class="audio-result" hidden>
+          <audio id="audioPlayer" controls preload="metadata"></audio>
+          <div class="download-row">
+            <div class="ready-copy"><span class="ready-mark">✓</span><span>Complete narration ready</span></div>
+            <a id="downloadButton" class="download-button" href="#" download="voiceover-narration.wav">↓ Download WAV</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="how-it-works" aria-label="How it works">
+        <div class="section-kicker">MADE FOR LONG-FORM NARRATION</div>
+        <div class="steps-row">
+          <div class="step"><span>01</span><div><strong>Write or upload</strong><p>Paste a script or import a text file.</p></div></div>
+          <div class="step-divider" aria-hidden="true"></div>
+          <div class="step"><span>02</span><div><strong>Choose a voice</strong><p>Pick your language and narrator.</p></div></div>
+          <div class="step-divider" aria-hidden="true"></div>
+          <div class="step"><span>03</span><div><strong>Generate & download</strong><p>Get one continuous WAV recording.</p></div></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>VOICEOVER STUDIO</span>
+      <span>Natural language. Thoughtful narration.</span>
+    </footer>
+  </div>
+</body>
+</html>
