@@ -1,0 +1,22 @@
+{
+  "name": "voiceover-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multilingual Hindi, English and Hinglish text-to-speech studio with long-script WAV output.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^7.2.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0"
+  }
+}
